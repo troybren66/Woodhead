@@ -1,5 +1,5 @@
-import PlayerCardDemo from '@/components/PlayerCard'
+import RosterLineup from '@/components/RosterLineup'
 
 export default function Home() {
-  return <PlayerCardDemo />
+  return <RosterLineup />
 }
