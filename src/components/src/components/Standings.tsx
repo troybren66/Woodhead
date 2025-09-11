@@ -41,7 +41,7 @@ const mockTeams = [
   }
 ];
 
-const currentWeek = 17;
+const currentWeek = 3;
 const regularSeasonWeeks = 17;
 const playoffWeeks = [18, 19, 20];
 const isPlayoffs = currentWeek > regularSeasonWeeks;

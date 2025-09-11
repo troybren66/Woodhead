@@ -18,7 +18,7 @@ export default function Home() {
                 currentPage === 'roster' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              Roster Builder
+              Roster 
             </button>
             <button
               onClick={() => setCurrentPage('standings')}

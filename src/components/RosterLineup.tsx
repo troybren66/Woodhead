@@ -28,6 +28,8 @@ function canPlayerFillSlot(playerPosition: Position, slotPosition: LineupPositio
 
 export default function RosterLineup() {
   const [lineup, setLineup] = useState<LineupSlot[]>(initialLineup);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+const [submitDeadline, setSubmitDeadline] = useState('Friday 11:59 PM');
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>(mockPlayers);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, player: Player) => {
@@ -66,21 +68,51 @@ export default function RosterLineup() {
       ));
     }
   };
+  const handleSubmitLineup = () => {
+    const filledSlots = lineup.filter(slot => slot.player).length;
+    
+    if (filledSlots === 5) {
+      setIsSubmitted(true);
+      alert('Lineup submitted successfully!');
+      // Later: API call to backend will go here
+    } else {
+      alert(`Please fill all 5 roster spots. You have ${filledSlots}/5 filled.`);
+    }
+  };
 
   const totalPoints = lineup
     .filter((slot) => Boolean(slot.player))
     .reduce((total, slot) => total + (slot.player?.projectedPoints ?? 0), 0);
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-slate-100 min-h-screen">
       <h1 className="text-3xl font-bold mb-8">Fantasy Roster Builder</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         
         {/* Lineup Section */}
-        <div className="bg-white rounded-lg border p-6">
+        <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6">
           <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Starting Lineup</h2>
-            <div className="text-lg font-bold text-blue-600">{totalPoints.toFixed(1)} pts</div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Starting Lineup</h2>
+          <div className="text-xl font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">{totalPoints.toFixed(1)} pts</div>
+            {/* Submit Button */}
+<div className="mt-6 p-4 border-t border-gray-200">
+  {!isSubmitted ? (
+    <button 
+      onClick={handleSubmitLineup}
+      className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700"
+      disabled={lineup.filter(slot => slot.player).length < 5}
+    >
+      Submit Lineup for Week 3
+    </button>
+  ) : (
+    <div className="text-center text-green-600 font-bold py-3">
+      ✓ Lineup submitted for Week 3
+    </div>
+  )}
+  <p className="text-sm text-gray-500 mt-2 text-center">
+    Deadline: {submitDeadline}
+  </p>
+</div>
           </div>
           
           <div className="space-y-4">
@@ -89,7 +121,7 @@ export default function RosterLineup() {
                 key={slot.position}
                 onDrop={(e) => handleDrop(e, slot.position as LineupPosition)}
                 onDragOver={handleDragOver}
-                className="border-2 border-dashed border-gray-300 rounded p-4 min-h-[80px] hover:border-blue-400 transition-colors"
+                className="border-2 border-dashed border-slate-300 rounded-xl p-4 min-h-[80px] hover:border-indigo-400 hover:bg-indigo-25 transition-all duration-200 bg-white shadow-md"
               >
                 {slot.player ? (
                   <div className="bg-blue-50 rounded p-2">
@@ -114,14 +146,14 @@ export default function RosterLineup() {
 
         {/* Available Players */}
         <div className="bg-white rounded-lg border p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Available Players</h2>
+        <h2 className="text-2xl font-bold text-slate-800 mb-4">Available Players</h2>
           <div className="space-y-2">
             {availablePlayers.map(player => (
               <div 
                 key={player.id} 
                 draggable
                 onDragStart={(e) => handleDragStart(e, player)}
-                className="bg-gray-50 rounded p-3 border cursor-grab hover:bg-gray-100 active:cursor-grabbing"
+                className="bg-white rounded-lg p-3 border border-slate-200 cursor-grab hover:bg-indigo-50 hover:border-indigo-300 active:cursor-grabbing shadow-md hover:shadow-lg transition-all duration-200"
               >
                 <div className="font-bold text-gray-900">{player.name} ({player.position})</div>
                 <div className="text-sm text-gray-600">{player.team}</div>
