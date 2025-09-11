@@ -1,7 +1,8 @@
 "use client"
 import React, { useState } from 'react';
+import { Position, LineupPosition, Player, LineupSlot } from '@/types/fantasy';
 
-const mockPlayers = [
+const mockPlayers: Player[] = [
   { id: '1', name: 'Josh Allen', position: 'QB', team: 'BUF', projectedPoints: 24.5, isInjured: false, byeWeek: 12 },
   { id: '2', name: 'Christian McCaffrey', position: 'RB', team: 'SF', projectedPoints: 20.8, isInjured: false, byeWeek: 9 },
   { id: '3', name: 'Cooper Kupp', position: 'WR', team: 'LAR', projectedPoints: 18.9, isInjured: false, byeWeek: 6 },
@@ -10,7 +11,7 @@ const mockPlayers = [
   { id: '6', name: 'Tyreek Hill', position: 'WR', team: 'MIA', projectedPoints: 18.1, isInjured: false, byeWeek: 6 }
 ];
 
-const initialLineup = [
+const initialLineup: LineupSlot[] = [
   { position: 'QB', player: null },
   { position: 'RB1', player: null },
   { position: 'RB2', player: null },
@@ -18,7 +19,7 @@ const initialLineup = [
   { position: 'FLEX2', player: null }
 ];
 
-function canPlayerFillSlot(playerPosition, slotPosition) {
+function canPlayerFillSlot(playerPosition: Position, slotPosition: LineupPosition) {
   if (slotPosition === 'QB') return playerPosition === 'QB';
   if (slotPosition === 'RB1' || slotPosition === 'RB2') return playerPosition === 'RB';
   if (slotPosition === 'FLEX1' || slotPosition === 'FLEX2') return playerPosition === 'WR' || playerPosition === 'TE';
@@ -26,17 +27,17 @@ function canPlayerFillSlot(playerPosition, slotPosition) {
 }
 
 export default function RosterLineup() {
-  const [lineup, setLineup] = useState(initialLineup);
-  const [availablePlayers, setAvailablePlayers] = useState(mockPlayers);
+  const [lineup, setLineup] = useState<LineupSlot[]>(initialLineup);
+  const [availablePlayers, setAvailablePlayers] = useState<Player[]>(mockPlayers);
 
-  const handleDragStart = (e, player) => {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, player: Player) => {
     e.dataTransfer.setData('text/plain', JSON.stringify(player));
   };
 
-  const handleDrop = (e, slotPosition) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, slotPosition: LineupPosition) => {
     e.preventDefault();
     const playerData = e.dataTransfer.getData('text/plain');
-    const player = JSON.parse(playerData);
+    const player = JSON.parse(playerData) as Player;
     
     if (!canPlayerFillSlot(player.position, slotPosition)) {
       alert(`${player.name} (${player.position}) cannot be placed in ${slotPosition} slot`);
@@ -52,14 +53,14 @@ export default function RosterLineup() {
     ));
   };
 
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
 
-  const removePlayer = (slotPosition) => {
-    const slot = lineup.find(s => s.position === slotPosition);
+  const removePlayer = (slotPosition: string) => {
+    const slot = lineup.find(s => s.position === slotPosition)!;
     if (slot.player) {
-      setAvailablePlayers(prev => [...prev, slot.player]);
+      setAvailablePlayers(prev => [...prev, slot.player!]);
       setLineup(prev => prev.map(s => 
         s.position === slotPosition ? { ...s, player: null } : s
       ));
@@ -67,8 +68,8 @@ export default function RosterLineup() {
   };
 
   const totalPoints = lineup
-    .filter(slot => slot.player)
-    .reduce((total, slot) => total + slot.player.projectedPoints, 0);
+    .filter((slot) => Boolean(slot.player))
+    .reduce((total, slot) => total + (slot.player?.projectedPoints ?? 0), 0);
 
   return (
     <div className="p-8">
@@ -78,7 +79,7 @@ export default function RosterLineup() {
         {/* Lineup Section */}
         <div className="bg-white rounded-lg border p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Starting Lineup</h2>
+          <h2 className="text-xl font-bold text-gray-900">Starting Lineup</h2>
             <div className="text-lg font-bold text-blue-600">{totalPoints.toFixed(1)} pts</div>
           </div>
           
@@ -86,14 +87,14 @@ export default function RosterLineup() {
             {lineup.map(slot => (
               <div
                 key={slot.position}
-                onDrop={(e) => handleDrop(e, slot.position)}
+                onDrop={(e) => handleDrop(e, slot.position as LineupPosition)}
                 onDragOver={handleDragOver}
                 className="border-2 border-dashed border-gray-300 rounded p-4 min-h-[80px] hover:border-blue-400 transition-colors"
               >
                 {slot.player ? (
                   <div className="bg-blue-50 rounded p-2">
-                    <div className="font-bold">{slot.player.name} ({slot.player.position})</div>
-                    <div className="text-sm text-gray-600">{slot.player.team} • {slot.player.projectedPoints} pts</div>
+                    <div className="font-bold text-black-900">{slot.player?.name} ({slot.player?.position})</div>
+                    <div className="text-sm text-black-600">{slot.player.team}</div>
                     <button 
                       onClick={() => removePlayer(slot.position)}
                       className="text-xs text-red-600 hover:text-red-800 mt-1"
@@ -102,7 +103,7 @@ export default function RosterLineup() {
                     </button>
                   </div>
                 ) : (
-                  <div className="text-center text-gray-500">
+                    <div className="text-center text-gray-700">
                     Drop {slot.position.includes('FLEX') ? 'WR/TE' : slot.position} here
                   </div>
                 )}
@@ -113,7 +114,7 @@ export default function RosterLineup() {
 
         {/* Available Players */}
         <div className="bg-white rounded-lg border p-6">
-          <h2 className="text-xl font-bold mb-4">Available Players</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Available Players</h2>
           <div className="space-y-2">
             {availablePlayers.map(player => (
               <div 
@@ -122,8 +123,8 @@ export default function RosterLineup() {
                 onDragStart={(e) => handleDragStart(e, player)}
                 className="bg-gray-50 rounded p-3 border cursor-grab hover:bg-gray-100 active:cursor-grabbing"
               >
-                <div className="font-bold">{player.name} ({player.position})</div>
-                <div className="text-sm text-gray-600">{player.team} • {player.projectedPoints} pts</div>
+                <div className="font-bold text-gray-900">{player.name} ({player.position})</div>
+                <div className="text-sm text-gray-600">{player.team}</div>
               </div>
             ))}
           </div>
