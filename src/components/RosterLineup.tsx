@@ -62,6 +62,8 @@ export default function RosterLineup() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPosition, setSelectedPosition] = useState('ALL');
   const [sortBy, setSortBy] = useState('points');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, player: Player) => {
     e.dataTransfer.setData('text/plain', JSON.stringify(player));
@@ -86,6 +88,24 @@ export default function RosterLineup() {
     ));
   };
   
+  // Generate suggestions based on search term
+  const suggestions = availablePlayers
+    .filter(player => {
+      const matchesSearch = player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           player.team.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesPosition = selectedPosition === 'ALL' || player.position === selectedPosition;
+      return matchesSearch && matchesPosition;
+    })
+    .slice(0, 5) // Limit to 5 suggestions
+    .sort((a, b) => {
+      // Prioritize exact name matches
+      const aExactMatch = a.name.toLowerCase().startsWith(searchTerm.toLowerCase());
+      const bExactMatch = b.name.toLowerCase().startsWith(searchTerm.toLowerCase());
+      if (aExactMatch && !bExactMatch) return -1;
+      if (!aExactMatch && bExactMatch) return 1;
+      return b.projectedPoints - a.projectedPoints;
+    });
+
   const filteredAndSortedPlayers = availablePlayers
     .filter(player => {
       const matchesSearch = player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,6 +163,48 @@ export default function RosterLineup() {
     setSearchTerm('');
     setSelectedPosition('ALL');
     setSortBy('points');
+    setShowSuggestions(false);
+    setSelectedSuggestionIndex(-1);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setShowSuggestions(value.length > 0);
+    setSelectedSuggestionIndex(-1);
+  };
+
+  const handleSuggestionSelect = (player: Player) => {
+    setSearchTerm(player.name);
+    setShowSuggestions(false);
+    setSelectedSuggestionIndex(-1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
+          handleSuggestionSelect(suggestions[selectedSuggestionIndex]);
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        break;
+    }
   };
 
   return (
@@ -249,7 +311,13 @@ export default function RosterLineup() {
                 <input
                   type="text"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => setShowSuggestions(searchTerm.length > 0)}
+                  onBlur={() => {
+                    // Delay hiding suggestions to allow for clicks
+                    setTimeout(() => setShowSuggestions(false), 150);
+                  }}
                   placeholder="Search players or teams..."
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white placeholder-gray-400 text-sm sm:text-base"
                 />
@@ -260,6 +328,35 @@ export default function RosterLineup() {
                   >
                     ✕
                   </button>
+                )}
+                
+                {/* Suggestions Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                    {suggestions.map((player, index) => (
+                      <div
+                        key={player.id}
+                        onClick={() => handleSuggestionSelect(player)}
+                        className={`px-4 py-3 cursor-pointer border-b border-gray-600 last:border-b-0 hover:bg-gray-600 transition-colors ${
+                          index === selectedSuggestionIndex ? 'bg-gray-600' : ''
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="font-medium text-white text-sm">
+                              {player.name}
+                            </div>
+                            <div className="text-xs text-gray-300">
+                              {player.position} • {player.team}
+                            </div>
+                          </div>
+                          <div className="text-xs text-cyan-400 font-medium">
+                            {player.projectedPoints.toFixed(1)} pts
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
 
