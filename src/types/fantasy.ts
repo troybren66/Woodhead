@@ -16,6 +16,7 @@ export interface Player {
   actualPoints?: number;
   isInjured: boolean;
   byeWeek: number;
+  usedInWeek?: number | null;
 }
 
 export interface LineupSlot {

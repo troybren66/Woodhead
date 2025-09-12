@@ -3,12 +3,10 @@ import React, { useState } from 'react';
 import { Position, LineupPosition, Player, LineupSlot } from '@/types/fantasy';
 
 const mockPlayers: Player[] = [
-  { id: '1', name: 'Josh Allen', position: 'QB', team: 'BUF', projectedPoints: 24.5, isInjured: false, byeWeek: 12 },
-  { id: '2', name: 'Christian McCaffrey', position: 'RB', team: 'SF', projectedPoints: 20.8, isInjured: false, byeWeek: 9 },
-  { id: '3', name: 'Cooper Kupp', position: 'WR', team: 'LAR', projectedPoints: 18.9, isInjured: false, byeWeek: 6 },
-  { id: '4', name: 'Travis Kelce', position: 'TE', team: 'KC', projectedPoints: 16.2, isInjured: false, byeWeek: 10 },
-  { id: '5', name: 'Austin Ekeler', position: 'RB', team: 'LAC', projectedPoints: 18.5, isInjured: false, byeWeek: 5 },
-  { id: '6', name: 'Tyreek Hill', position: 'WR', team: 'MIA', projectedPoints: 18.1, isInjured: false, byeWeek: 6 }
+  { id: '1', name: 'Josh Allen', position: 'QB', team: 'BUF', projectedPoints: 24.5, isInjured: false, byeWeek: 12, usedInWeek: 1 },
+  { id: '2', name: 'Christian McCaffrey', position: 'RB', team: 'SF', projectedPoints: 20.8, isInjured: false, byeWeek: 9, usedInWeek: null },
+  { id: '3', name: 'Cooper Kupp', position: 'WR', team: 'LAR', projectedPoints: 18.9, isInjured: false, byeWeek: 6, usedInWeek: 2 },
+  // etc... null means not used yet, number means used in that week
 ];
 
 const initialLineup: LineupSlot[] = [
@@ -31,6 +29,9 @@ export default function RosterLineup() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 const [submitDeadline, setSubmitDeadline] = useState('Friday 11:59 PM');
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>(mockPlayers);
+  const [searchTerm, setSearchTerm] = useState('');
+const [selectedPosition, setSelectedPosition] = useState('ALL');
+const [sortBy, setSortBy] = useState('points');
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, player: Player) => {
     e.dataTransfer.setData('text/plain', JSON.stringify(player));
@@ -45,15 +46,31 @@ const [submitDeadline, setSubmitDeadline] = useState('Friday 11:59 PM');
       alert(`${player.name} (${player.position}) cannot be placed in ${slotPosition} slot`);
       return;
     }
-
+  
     // Remove player from available players
     setAvailablePlayers(prev => prev.filter(p => p.id !== player.id));
-
+  
     // Add player to lineup
     setLineup(prev => prev.map(slot => 
       slot.position === slotPosition ? { ...slot, player } : slot
     ));
   };
+  
+  const filteredAndSortedPlayers = availablePlayers
+    .filter(player => {
+      const matchesSearch = player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           player.team.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesPosition = selectedPosition === 'ALL' || player.position === selectedPosition;
+      return matchesSearch && matchesPosition;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name': return a.name.localeCompare(b.name);
+        case 'team': return a.team.localeCompare(b.team);
+        case 'points': return b.projectedPoints - a.projectedPoints;
+        default: return 0;
+      }
+    });
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -84,35 +101,42 @@ const [submitDeadline, setSubmitDeadline] = useState('Friday 11:59 PM');
     .filter((slot) => Boolean(slot.player))
     .reduce((total, slot) => total + (slot.player?.projectedPoints ?? 0), 0);
 
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSelectedPosition('ALL');
+    setSortBy('points');
+  };
+
   return (
     <div className="p-8 bg-slate-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-8">Fantasy Roster Builder</h1>
+      <h1 className="text-3xl font-bold mb-8">Roster</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         
         {/* Lineup Section */}
         <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6">
           <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">Starting Lineup</h2>
-          <div className="text-xl font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">{totalPoints.toFixed(1)} pts</div>
-            {/* Submit Button */}
-<div className="mt-6 p-4 border-t border-gray-200">
-  {!isSubmitted ? (
-    <button 
-      onClick={handleSubmitLineup}
-      className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700"
-      disabled={lineup.filter(slot => slot.player).length < 5}
-    >
-      Submit Lineup for Week 3
-    </button>
-  ) : (
-    <div className="text-center text-green-600 font-bold py-3">
-      ✓ Lineup submitted for Week 3
-    </div>
-  )}
-  <p className="text-sm text-gray-500 mt-2 text-center">
-    Deadline: {submitDeadline}
-  </p>
-</div>
+            <h2 className="text-2xl font-bold text-slate-800 mb-2">Starting Lineup</h2>
+            <div className="text-xl font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">{totalPoints.toFixed(1)} pts</div>
+          </div>
+          
+          {/* Submit Button */}
+          <div className="mt-6 p-4 border-t border-gray-200">
+            {!isSubmitted ? (
+              <button 
+                onClick={handleSubmitLineup}
+                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700"
+                disabled={lineup.filter(slot => slot.player).length < 5}
+              >
+                Submit Lineup for Week 3
+              </button>
+            ) : (
+              <div className="text-center text-green-600 font-bold py-3">
+                ✓ Lineup submitted for Week 3
+              </div>
+            )}
+            <p className="text-sm text-gray-500 mt-2 text-center">
+              Deadline: {submitDeadline}
+            </p>
           </div>
           
           <div className="space-y-4">
@@ -146,22 +170,89 @@ const [submitDeadline, setSubmitDeadline] = useState('Friday 11:59 PM');
 
         {/* Available Players */}
         <div className="bg-white rounded-lg border p-6">
-        <h2 className="text-2xl font-bold text-slate-800 mb-4">Available Players</h2>
-          <div className="space-y-2">
-            {availablePlayers.map(player => (
-              <div 
-                key={player.id} 
-                draggable
-                onDragStart={(e) => handleDragStart(e, player)}
-                className="bg-white rounded-lg p-3 border border-slate-200 cursor-grab hover:bg-indigo-50 hover:border-indigo-300 active:cursor-grabbing shadow-md hover:shadow-lg transition-all duration-200"
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">Available Players</h2>
+          
+          {/* Search Controls */}
+          <div className="mb-4">
+            <div className="relative mb-4">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search players or teams..."
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-2 text-slate-400 hover:text-slate-600"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <select
+                value={selectedPosition}
+                onChange={(e) => setSelectedPosition(e.target.value)}
+                className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <div className="font-bold text-gray-900">{player.name} ({player.position})</div>
-                <div className="text-sm text-gray-600">{player.team}</div>
-              </div>
-            ))}
+                <option value="ALL">All Positions</option>
+                <option value="QB">QB</option>
+                <option value="RB">RB</option>
+                <option value="WR">WR</option>
+                <option value="TE">TE</option>
+              </select>
+              
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="points">Sort by Points</option>
+                <option value="name">Sort by Name</option>
+                <option value="team">Sort by Team</option>
+              </select>
+              
+              <button
+                onClick={clearSearch}
+                className="px-4 py-2 bg-slate-500 text-white rounded-lg hover:bg-slate-600"
+              >
+                Clear
+              </button>
+            </div>
+
+            <div className="text-sm text-slate-600 mb-4">
+              Showing {filteredAndSortedPlayers.length} of {availablePlayers.length} players
+            </div>
+          </div>
+
+          <div className="space-y-2">
+          {filteredAndSortedPlayers.map((player) => (
+  <div
+    key={player.id}
+    draggable
+    onDragStart={(e) => handleDragStart(e, player)}
+    className={`bg-white rounded-lg p-3 border border-slate-200 cursor-grab hover:bg-indigo-50 hover:border-indigo-300 active:cursor-grabbing shadow-md hover:shadow-lg transition-all duration-200 ${
+      player.usedInWeek ? 'opacity-60 bg-gray-50' : ''
+    }`}
+  >
+    <div className="font-bold text-slate-900">
+      <span className={player.usedInWeek ? 'line-through text-gray-500' : ''}>
+        {player.name} ({player.position})
+      </span>
+      {player.usedInWeek && (
+        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
+          Used Week {player.usedInWeek}
+        </span>
+      )}
+    </div>
+    <div className="text-sm text-slate-600">{player.team}</div>
+  </div>
+))}
           </div>
         </div>
-        
       </div>
     </div>
   );
