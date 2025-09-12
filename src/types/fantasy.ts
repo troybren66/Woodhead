@@ -15,8 +15,10 @@ export interface Player {
   projectedPoints: number;
   actualPoints?: number;
   isInjured: boolean;
+  injuryStatus?: 'Questionable' | 'Doubtful' | 'Out' | 'Probable';
   byeWeek: number;
   usedInWeek?: number | null;
+  gameTime?: string; // ISO string for game start time
 }
 
 export interface LineupSlot {
@@ -36,6 +38,8 @@ export interface Team {
   wins: number;
   losses: number;
   ties: number;
+  lineupSubmittedAt?: string; // ISO string for when lineup was submitted
+  canEditLineup?: boolean; // Whether lineup can still be edited
 }
 
 export interface League {

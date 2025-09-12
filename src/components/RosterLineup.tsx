@@ -3,10 +3,98 @@ import React, { useState, useEffect } from 'react';
 import { Position, LineupPosition, Player, LineupSlot } from '@/types/fantasy';
 
 const mockPlayers: Player[] = [
-  { id: '1', name: 'Josh Allen', position: 'QB', team: 'BUF', projectedPoints: 24.5, isInjured: false, byeWeek: 12, usedInWeek: 1 },
-  { id: '2', name: 'Christian McCaffrey', position: 'RB', team: 'SF', projectedPoints: 20.8, isInjured: false, byeWeek: 9, usedInWeek: null },
-  { id: '3', name: 'Cooper Kupp', position: 'WR', team: 'LAR', projectedPoints: 18.9, isInjured: false, byeWeek: 6, usedInWeek: 2 },
-  // etc... null means not used yet, number means used in that week
+  { 
+    id: '1', 
+    name: 'Josh Allen', 
+    position: 'QB', 
+    team: 'BUF', 
+    projectedPoints: 24.5, 
+    isInjured: false, 
+    byeWeek: 12, 
+    usedInWeek: 1,
+    gameTime: '2024-01-07T18:00:00Z' // Sunday 1 PM EST
+  },
+  { 
+    id: '2', 
+    name: 'Christian McCaffrey', 
+    position: 'RB', 
+    team: 'SF', 
+    projectedPoints: 20.8, 
+    isInjured: true,
+    injuryStatus: 'Questionable',
+    byeWeek: 9, 
+    usedInWeek: null,
+    gameTime: '2024-01-07T21:25:00Z' // Sunday 4:25 PM EST
+  },
+  { 
+    id: '3', 
+    name: 'Cooper Kupp', 
+    position: 'WR', 
+    team: 'LAR', 
+    projectedPoints: 18.9, 
+    isInjured: false, 
+    byeWeek: 6, 
+    usedInWeek: 2,
+    gameTime: '2024-01-07T18:00:00Z' // Sunday 1 PM EST
+  },
+  { 
+    id: '4', 
+    name: 'Travis Kelce', 
+    position: 'TE', 
+    team: 'KC', 
+    projectedPoints: 16.2, 
+    isInjured: true,
+    injuryStatus: 'Doubtful',
+    byeWeek: 10, 
+    usedInWeek: null,
+    gameTime: '2024-01-07T18:00:00Z' // Sunday 1 PM EST
+  },
+  { 
+    id: '5', 
+    name: 'Austin Ekeler', 
+    position: 'RB', 
+    team: 'LAC', 
+    projectedPoints: 18.5, 
+    isInjured: false, 
+    byeWeek: 5, 
+    usedInWeek: null,
+    gameTime: '2024-01-07T21:25:00Z' // Sunday 4:25 PM EST
+  },
+  { 
+    id: '6', 
+    name: 'Derrick Henry', 
+    position: 'RB', 
+    team: 'TEN', 
+    projectedPoints: 17.2, 
+    isInjured: true,
+    injuryStatus: 'Out',
+    byeWeek: 7, 
+    usedInWeek: null,
+    gameTime: '2024-01-07T18:00:00Z' // Sunday 1 PM EST
+  },
+  { 
+    id: '7', 
+    name: 'Tyreek Hill', 
+    position: 'WR', 
+    team: 'MIA', 
+    projectedPoints: 19.3, 
+    isInjured: false, 
+    byeWeek: 10, 
+    usedInWeek: null,
+    gameTime: '2024-01-07T18:00:00Z' // Sunday 1 PM EST
+  },
+  { 
+    id: '8', 
+    name: 'Davante Adams', 
+    position: 'WR', 
+    team: 'LV', 
+    projectedPoints: 17.8, 
+    isInjured: true,
+    injuryStatus: 'Probable',
+    byeWeek: 13, 
+    usedInWeek: null,
+    gameTime: '2024-01-07T21:25:00Z' // Sunday 4:25 PM EST
+  }
 ];
 
 const initialLineup: LineupSlot[] = [
@@ -64,6 +152,58 @@ export default function RosterLineup() {
   const [sortBy, setSortBy] = useState('points');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [lineupSubmittedAt, setLineupSubmittedAt] = useState<string | null>(null);
+  const [isEditingMode, setIsEditingMode] = useState(false);
+  const [showInjuryWarnings, setShowInjuryWarnings] = useState(false);
+
+  // Utility functions for time validation and injury checking
+  const canEditLineup = () => {
+    if (!isSubmitted || !lineupSubmittedAt) return false;
+    
+    // Check if any player in the lineup has a game that hasn't started yet
+    const now = new Date();
+    const lineupPlayers = lineup.filter(slot => slot.player).map(slot => slot.player!);
+    
+    return lineupPlayers.some(player => {
+      if (!player.gameTime) return true; // If no game time, assume can edit
+      const gameTime = new Date(player.gameTime);
+      return gameTime > now;
+    });
+  };
+
+  const getInjuredPlayersInLineup = () => {
+    return lineup
+      .filter(slot => slot.player && slot.player.isInjured)
+      .map(slot => slot.player!);
+  };
+
+  const getInjuryStatusColor = (status?: string) => {
+    switch (status) {
+      case 'Out': return 'text-red-400 bg-red-900/30 border-red-500/30';
+      case 'Doubtful': return 'text-orange-400 bg-orange-900/30 border-orange-500/30';
+      case 'Questionable': return 'text-yellow-400 bg-yellow-900/30 border-yellow-500/30';
+      case 'Probable': return 'text-green-400 bg-green-900/30 border-green-500/30';
+      default: return 'text-gray-400 bg-gray-900/30 border-gray-500/30';
+    }
+  };
+
+  const getTimeUntilGame = (gameTime?: string) => {
+    if (!gameTime) return null;
+    const now = new Date();
+    const game = new Date(gameTime);
+    const diff = game.getTime() - now.getTime();
+    
+    if (diff <= 0) return 'Game Started';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else {
+      return `${minutes}m`;
+    }
+  };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, player: Player) => {
     e.dataTransfer.setData('text/plain', JSON.stringify(player));
@@ -141,6 +281,7 @@ export default function RosterLineup() {
     
     if (filledSlots === 5) {
       setIsSubmitted(true);
+      setLineupSubmittedAt(new Date().toISOString());
       setShowConfetti(true);
       
       // Hide confetti after 3 seconds
@@ -153,6 +294,28 @@ export default function RosterLineup() {
     } else {
       alert(`Please fill all 5 roster spots. You have ${filledSlots}/5 filled.`);
     }
+  };
+
+  const handleEditLineup = () => {
+    if (canEditLineup()) {
+      setIsEditingMode(true);
+      setShowInjuryWarnings(true);
+    } else {
+      alert('Cannot edit lineup - all games have started or lineup is locked.');
+    }
+  };
+
+  const handleSaveLineupChanges = () => {
+    setIsEditingMode(false);
+    setShowInjuryWarnings(false);
+    alert('Lineup changes saved successfully!');
+    // Later: API call to backend will go here
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingMode(false);
+    setShowInjuryWarnings(false);
+    // Reset lineup to original submitted state if needed
   };
 
   const totalPoints = lineup
@@ -255,7 +418,7 @@ export default function RosterLineup() {
               </div>
             </div>
             
-            {/* Submit Button */}
+            {/* Submit/Edit Buttons */}
             <div className="mb-4 sm:mb-6 p-3 sm:p-4 border-t border-gray-700">
               {!isSubmitted ? (
                 <button 
@@ -266,11 +429,75 @@ export default function RosterLineup() {
                   Submit Lineup for Week 3
                 </button>
               ) : (
-                <div className="text-center text-green-400 font-bold py-3 bg-green-900/30 rounded-lg border border-green-500/30 min-h-[44px] flex items-center justify-center">
-                  ✓ Lineup submitted for Week 3
+                <div className="space-y-3">
+                  <div className="text-center text-green-400 font-bold py-3 bg-green-900/30 rounded-lg border border-green-500/30 min-h-[44px] flex items-center justify-center">
+                    ✓ Lineup submitted for Week 3
+                  </div>
+                  
+                  {canEditLineup() && (
+                    <div className="flex gap-2">
+                      {!isEditingMode ? (
+                        <button 
+                          onClick={handleEditLineup}
+                          className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-600 text-white py-2 sm:py-3 rounded-lg font-bold hover:from-yellow-600 hover:to-orange-700 transition-all duration-200 shadow-lg text-sm sm:text-base min-h-[44px]"
+                        >
+                          Edit Lineup
+                        </button>
+                      ) : (
+                        <>
+                          <button 
+                            onClick={handleSaveLineupChanges}
+                            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-2 sm:py-3 rounded-lg font-bold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-lg text-sm sm:text-base min-h-[44px]"
+                          >
+                            Save Changes
+                          </button>
+                          <button 
+                            onClick={handleCancelEdit}
+                            className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white py-2 sm:py-3 rounded-lg font-bold hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-lg text-sm sm:text-base min-h-[44px]"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  
+                  {!canEditLineup() && isSubmitted && (
+                    <div className="text-center text-red-400 text-sm py-2 bg-red-900/30 rounded-lg border border-red-500/30">
+                      Lineup locked - all games have started
+                    </div>
+                  )}
                 </div>
               )}
             </div>
+
+            {/* Injury Warnings */}
+            {showInjuryWarnings && getInjuredPlayersInLineup().length > 0 && (
+              <div className="mb-4 p-4 bg-yellow-900/30 border border-yellow-500/30 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-yellow-400 text-lg">⚠️</span>
+                  <h3 className="font-bold text-yellow-400">Injury Alert</h3>
+                </div>
+                <div className="space-y-2">
+                  {getInjuredPlayersInLineup().map(player => (
+                    <div key={player.id} className="flex items-center justify-between p-2 bg-yellow-900/20 rounded">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-white">{player.name}</span>
+                        <span className={`px-2 py-1 rounded text-xs font-semibold border ${getInjuryStatusColor(player.injuryStatus)}`}>
+                          {player.injuryStatus}
+                        </span>
+                      </div>
+                      <div className="text-xs text-yellow-300">
+                        {player.gameTime && getTimeUntilGame(player.gameTime)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-yellow-300 text-sm mt-2">
+                  Consider replacing injured players before their games start.
+                </p>
+              </div>
+            )}
             
             <div className="space-y-3 sm:space-y-4">
               {lineup.map(slot => (
@@ -281,15 +508,35 @@ export default function RosterLineup() {
                   className="border-2 border-dashed border-gray-600 rounded-xl p-3 sm:p-4 min-h-[70px] sm:min-h-[80px] hover:border-cyan-400 hover:bg-gray-700/50 transition-all duration-200 bg-gray-700/30 shadow-md"
                 >
                   {slot.player ? (
-                    <div className="bg-cyan-900/30 rounded-lg p-2 sm:p-3 border border-cyan-500/30">
-                      <div className="font-bold text-base sm:text-lg text-white">{slot.player?.name} ({slot.player?.position})</div>
-                      <div className="text-xs sm:text-sm text-gray-300">{slot.player.team}</div>
-                      <button 
-                        onClick={() => removePlayer(slot.position)}
-                        className="text-xs text-red-400 hover:text-red-300 mt-2 px-2 py-1 bg-red-900/30 rounded border border-red-500/30 min-h-[32px]"
-                      >
-                        Remove
-                      </button>
+                    <div className={`rounded-lg p-2 sm:p-3 border ${
+                      slot.player.isInjured 
+                        ? 'bg-red-900/30 border-red-500/30' 
+                        : 'bg-cyan-900/30 border-cyan-500/30'
+                    }`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="font-bold text-base sm:text-lg text-white">
+                          {slot.player?.name} ({slot.player?.position})
+                        </div>
+                        {slot.player.isInjured && (
+                          <span className={`px-2 py-1 rounded text-xs font-semibold border ${getInjuryStatusColor(slot.player.injuryStatus)}`}>
+                            {slot.player.injuryStatus}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs sm:text-sm text-gray-300 mb-1">{slot.player.team}</div>
+                      {slot.player.gameTime && (
+                        <div className="text-xs text-cyan-300 mb-2">
+                          Game: {getTimeUntilGame(slot.player.gameTime)}
+                        </div>
+                      )}
+                      {(isEditingMode || !isSubmitted) && (
+                        <button 
+                          onClick={() => removePlayer(slot.position)}
+                          className="text-xs text-red-400 hover:text-red-300 px-2 py-1 bg-red-900/30 rounded border border-red-500/30 min-h-[32px]"
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
                   ) : (
                       <div className="text-center text-gray-400 text-sm sm:text-base">
@@ -400,23 +647,37 @@ export default function RosterLineup() {
               {filteredAndSortedPlayers.map((player) => (
                 <div
                   key={player.id}
-                  draggable
+                  draggable={isEditingMode || !isSubmitted}
                   onDragStart={(e) => handleDragStart(e, player)}
-                  className={`bg-gray-700 rounded-lg p-3 border border-gray-600 cursor-grab hover:bg-cyan-900/30 hover:border-cyan-500/50 active:cursor-grabbing shadow-md hover:shadow-lg transition-all duration-200 ${
-                    player.usedInWeek ? 'opacity-60 bg-gray-600' : ''
-                  }`}
+                  className={`rounded-lg p-3 border cursor-grab hover:bg-cyan-900/30 hover:border-cyan-500/50 active:cursor-grabbing shadow-md hover:shadow-lg transition-all duration-200 ${
+                    player.usedInWeek ? 'opacity-60 bg-gray-600 border-gray-600' : 
+                    player.isInjured ? 'bg-red-900/20 border-red-500/30' : 
+                    'bg-gray-700 border-gray-600'
+                  } ${!isEditingMode && isSubmitted ? 'cursor-not-allowed opacity-50' : ''}`}
                 >
-                  <div className="font-bold text-white text-sm sm:text-base">
-                    <span className={player.usedInWeek ? 'line-through text-gray-500' : ''}>
-                      {player.name} ({player.position})
-                    </span>
-                    {player.usedInWeek && (
-                      <span className="ml-2 text-xs bg-gray-600 text-gray-300 px-2 py-1 rounded">
-                        Used Week {player.usedInWeek}
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="font-bold text-white text-sm sm:text-base">
+                      <span className={player.usedInWeek ? 'line-through text-gray-500' : ''}>
+                        {player.name} ({player.position})
+                      </span>
+                      {player.usedInWeek && (
+                        <span className="ml-2 text-xs bg-gray-600 text-gray-300 px-2 py-1 rounded">
+                          Used Week {player.usedInWeek}
+                        </span>
+                      )}
+                    </div>
+                    {player.isInjured && (
+                      <span className={`px-2 py-1 rounded text-xs font-semibold border ${getInjuryStatusColor(player.injuryStatus)}`}>
+                        {player.injuryStatus}
                       </span>
                     )}
                   </div>
-                  <div className="text-xs sm:text-sm text-gray-300">{player.team}</div>
+                  <div className="text-xs sm:text-sm text-gray-300 mb-1">{player.team}</div>
+                  {player.gameTime && (
+                    <div className="text-xs text-cyan-300">
+                      Game: {getTimeUntilGame(player.gameTime)}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
