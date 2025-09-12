@@ -108,149 +108,173 @@ const [sortBy, setSortBy] = useState('points');
   };
 
   return (
-    <div className="p-8 bg-slate-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-8">Roster</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="bg-gray-900 min-h-screen">
+      {/* New Header */}
+      <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white p-8 rounded-2xl shadow-2xl mb-8 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-4 right-4 text-6xl">🏈</div>
+          <div className="absolute bottom-4 left-4 text-4xl">⚡</div>
+        </div>
         
-        {/* Lineup Section */}
-        <div className="bg-white rounded-xl shadow-xl border border-slate-200 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">Starting Lineup</h2>
-            <div className="text-xl font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg">{totalPoints.toFixed(1)} pts</div>
+        <div className="flex justify-between items-center relative z-10">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+                Woodhead League
+              </h1>
+              <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+            </div>
           </div>
-          
-          {/* Submit Button */}
-          <div className="mt-6 p-4 border-t border-gray-200">
-            {!isSubmitted ? (
-              <button 
-                onClick={handleSubmitLineup}
-                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold hover:bg-indigo-700"
-                disabled={lineup.filter(slot => slot.player).length < 5}
-              >
-                Submit Lineup for Week 3
-              </button>
-            ) : (
-              <div className="text-center text-green-600 font-bold py-3">
-                ✓ Lineup submitted for Week 3
-              </div>
-            )}
-            <p className="text-sm text-gray-500 mt-2 text-center">
-              Deadline: {submitDeadline}
-            </p>
-          </div>
-          
-          <div className="space-y-4">
-            {lineup.map(slot => (
-              <div
-                key={slot.position}
-                onDrop={(e) => handleDrop(e, slot.position as LineupPosition)}
-                onDragOver={handleDragOver}
-                className="border-2 border-dashed border-slate-300 rounded-xl p-4 min-h-[80px] hover:border-indigo-400 hover:bg-indigo-25 transition-all duration-200 bg-white shadow-md"
-              >
-                {slot.player ? (
-                  <div className="bg-blue-50 rounded p-2">
-                    <div className="font-bold text-black-900">{slot.player?.name} ({slot.player?.position})</div>
-                    <div className="text-sm text-black-600">{slot.player.team}</div>
-                    <button 
-                      onClick={() => removePlayer(slot.position)}
-                      className="text-xs text-red-600 hover:text-red-800 mt-1"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                    <div className="text-center text-gray-700">
-                    Drop {slot.position.includes('FLEX') ? 'WR/TE' : slot.position} here
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="text-right bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div className="text-3xl font-bold text-yellow-300">Week 3</div>
+            <div className="text-indigo-200">2025 Season</div>
           </div>
         </div>
+      </div>
 
-        {/* Available Players */}
-        <div className="bg-white rounded-lg border p-6">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">Available Players</h2>
-          
-          {/* Search Controls */}
-          <div className="mb-4">
-            <div className="relative mb-4">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search players or teams..."
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="absolute right-3 top-2 text-slate-400 hover:text-slate-600"
+      <div className="p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Lineup Section */}
+          <div className="bg-gray-800 rounded-xl shadow-xl border border-gray-700 p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white mb-2">Starting Lineup</h2>
+              <div className="text-xl font-bold text-cyan-400 bg-cyan-900/30 px-4 py-2 rounded-lg border border-cyan-500/30">
+                {totalPoints.toFixed(1)} pts
+              </div>
+            </div>
+            
+            {/* Submit Button */}
+            <div className="mb-6 p-4 border-t border-gray-700">
+              {!isSubmitted ? (
+                <button 
+                  onClick={handleSubmitLineup}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-lg font-bold hover:from-cyan-600 hover:to-blue-700 transition-all duration-200 shadow-lg"
+                  disabled={lineup.filter(slot => slot.player).length < 5}
                 >
-                  ✕
+                  Submit Lineup for Week 3
                 </button>
+              ) : (
+                <div className="text-center text-green-400 font-bold py-3 bg-green-900/30 rounded-lg border border-green-500/30">
+                  ✓ Lineup submitted for Week 3
+                </div>
               )}
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-              <select
-                value={selectedPosition}
-                onChange={(e) => setSelectedPosition(e.target.value)}
-                className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="ALL">All Positions</option>
-                <option value="QB">QB</option>
-                <option value="RB">RB</option>
-                <option value="WR">WR</option>
-                <option value="TE">TE</option>
-              </select>
-              
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="points">Sort by Points</option>
-                <option value="name">Sort by Name</option>
-                <option value="team">Sort by Team</option>
-              </select>
-              
-              <button
-                onClick={clearSearch}
-                className="px-4 py-2 bg-slate-500 text-white rounded-lg hover:bg-slate-600"
-              >
-                Clear
-              </button>
-            </div>
-
-            <div className="text-sm text-slate-600 mb-4">
-              Showing {filteredAndSortedPlayers.length} of {availablePlayers.length} players
+            
+            <div className="space-y-4">
+              {lineup.map(slot => (
+                <div
+                  key={slot.position}
+                  onDrop={(e) => handleDrop(e, slot.position as LineupPosition)}
+                  onDragOver={handleDragOver}
+                  className="border-2 border-dashed border-gray-600 rounded-xl p-4 min-h-[80px] hover:border-cyan-400 hover:bg-gray-700/50 transition-all duration-200 bg-gray-700/30 shadow-md"
+                >
+                  {slot.player ? (
+                    <div className="bg-cyan-900/30 rounded-lg p-3 border border-cyan-500/30">
+                      <div className="font-bold text-lg text-white">{slot.player?.name} ({slot.player?.position})</div>
+                      <div className="text-sm text-gray-300">{slot.player.team}</div>
+                      <button 
+                        onClick={() => removePlayer(slot.position)}
+                        className="text-xs text-red-400 hover:text-red-300 mt-2 px-2 py-1 bg-red-900/30 rounded border border-red-500/30"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                      <div className="text-center text-gray-400">
+                      Drop {slot.position.includes('FLEX') ? 'WR/TE' : slot.position} here
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="space-y-2">
-          {filteredAndSortedPlayers.map((player) => (
-  <div
-    key={player.id}
-    draggable
-    onDragStart={(e) => handleDragStart(e, player)}
-    className={`bg-white rounded-lg p-3 border border-slate-200 cursor-grab hover:bg-indigo-50 hover:border-indigo-300 active:cursor-grabbing shadow-md hover:shadow-lg transition-all duration-200 ${
-      player.usedInWeek ? 'opacity-60 bg-gray-50' : ''
-    }`}
-  >
-    <div className="font-bold text-slate-900">
-      <span className={player.usedInWeek ? 'line-through text-gray-500' : ''}>
-        {player.name} ({player.position})
-      </span>
-      {player.usedInWeek && (
-        <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
-          Used Week {player.usedInWeek}
-        </span>
-      )}
-    </div>
-    <div className="text-sm text-slate-600">{player.team}</div>
-  </div>
-))}
+          {/* Available Players */}
+          <div className="bg-gray-800 rounded-xl shadow-xl border border-gray-700 p-6">
+            <h2 className="text-2xl font-bold text-white mb-6">Available Players</h2>
+            
+            {/* Search Controls */}
+            <div className="mb-6">
+              <div className="relative mb-4">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search players or teams..."
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white placeholder-gray-400"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-3 top-3 text-gray-400 hover:text-white"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                <select
+                  value={selectedPosition}
+                  onChange={(e) => setSelectedPosition(e.target.value)}
+                  className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
+                >
+                  <option value="ALL">All Positions</option>
+                  <option value="QB">QB</option>
+                  <option value="RB">RB</option>
+                  <option value="WR">WR</option>
+                  <option value="TE">TE</option>
+                </select>
+                
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white"
+                >
+                  <option value="points">Sort by Points</option>
+                  <option value="name">Sort by Name</option>
+                  <option value="team">Sort by Team</option>
+                </select>
+                
+                <button
+                  onClick={clearSearch}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+
+              <div className="text-sm text-gray-400 mb-4">
+                Showing {filteredAndSortedPlayers.length} of {availablePlayers.length} players
+              </div>
+            </div>
+
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {filteredAndSortedPlayers.map((player) => (
+                <div
+                  key={player.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, player)}
+                  className={`bg-gray-700 rounded-lg p-3 border border-gray-600 cursor-grab hover:bg-cyan-900/30 hover:border-cyan-500/50 active:cursor-grabbing shadow-md hover:shadow-lg transition-all duration-200 ${
+                    player.usedInWeek ? 'opacity-60 bg-gray-600' : ''
+                  }`}
+                >
+                  <div className="font-bold text-white">
+                    <span className={player.usedInWeek ? 'line-through text-gray-500' : ''}>
+                      {player.name} ({player.position})
+                    </span>
+                    {player.usedInWeek && (
+                      <span className="ml-2 text-xs bg-gray-600 text-gray-300 px-2 py-1 rounded">
+                        Used Week {player.usedInWeek}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-300">{player.team}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

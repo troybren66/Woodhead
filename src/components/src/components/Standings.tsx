@@ -71,12 +71,12 @@ function calculateRoundPoints(weeklyPoints: number[], roundWeeks: number[], mult
   
   function getPositionColor(position: string): string {
     const colors: Record<string, string> = {
-      QB: 'bg-red-100 text-red-800',
-      RB: 'bg-green-100 text-green-800',
-      WR: 'bg-blue-100 text-blue-800',
-      TE: 'bg-yellow-100 text-yellow-800'
+      QB: 'bg-red-900/30 text-red-300 border-red-500/30',
+      RB: 'bg-green-900/30 text-green-300 border-green-500/30',
+      WR: 'bg-blue-900/30 text-blue-300 border-blue-500/30',
+      TE: 'bg-yellow-900/30 text-yellow-300 border-yellow-500/30'
     };
-    return colors[position] || 'bg-gray-100 text-gray-800';
+    return colors[position] || 'bg-gray-900/30 text-gray-300 border-gray-500/30';
   }
   
   export default function LeagueStandings() {
@@ -153,120 +153,138 @@ function calculateRoundPoints(weeklyPoints: number[], roundWeeks: number[], mult
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-900">
+      <div className="max-w-7xl mx-auto p-6">
         
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">League Standings</h1>
-          <div className="flex items-center gap-4 text-lg">
-            <span className="text-gray-600">Week {currentWeek} of {regularSeasonWeeks}</span>
-            {isPlayoffs && (
-              <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-semibold">
-                PLAYOFFS - 1.5x Points
-              </span>
-            )}
-            {!isPlayoffs && (
-              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold">
-                Regular Season
-              </span>
-            )}
+          <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-4 right-4 text-6xl"></div>
+              <div className="absolute bottom-4 left-4 text-4xl">📊</div>
+            </div>
+            
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+                  League Standings
+                </h1>
+                <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+              </div>
+              <div className="flex items-center gap-4 text-lg">
+                <span className="text-indigo-200">Week {currentWeek} of {regularSeasonWeeks}</span>
+                {isPlayoffs && (
+                  <span className="bg-orange-900/30 text-orange-300 px-3 py-1 rounded-full font-semibold border border-orange-500/30">
+                    PLAYOFFS - 1.5x Points
+                  </span>
+                )}
+                {!isPlayoffs && (
+                  <span className="bg-green-900/30 text-green-300 px-3 py-1 rounded-full font-semibold border border-green-500/30">
+                    Regular Season
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* Navigation Tabs */}
         <div className="mb-6">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setViewMode('overall')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'overall' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'overall' ? 'bg-cyan-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Overall
             </button>
             <button
               onClick={() => setViewMode('season')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'season' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'season' ? 'bg-cyan-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Season
             </button>
             <button
               onClick={() => setViewMode('week')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'week' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'week' ? 'bg-cyan-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Week
             </button>
             <button
               onClick={() => setViewMode('round1')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'round1' ? 'bg-green-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'round1' ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Round 1
             </button>
             <button
               onClick={() => setViewMode('round2')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'round2' ? 'bg-green-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'round2' ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Round 2
             </button>
             <button
               onClick={() => setViewMode('round3')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'round3' ? 'bg-green-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'round3' ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Round 3
             </button>
             <button
               onClick={() => setViewMode('round4')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'round4' ? 'bg-green-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'round4' ? 'bg-green-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Round 4
             </button>
             <button
               onClick={() => setViewMode('playoff1')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'playoff1' ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'playoff1' ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Playoff 1
             </button>
             <button
               onClick={() => setViewMode('playoff2')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'playoff2' ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'playoff2' ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Playoff 2
             </button>
             <button
               onClick={() => setViewMode('playoff3')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'playoff3' ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'playoff3' ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Playoff 3
             </button>
             <button
               onClick={() => setViewMode('playoffsTotal')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'playoffsTotal' ? 'bg-orange-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'playoffsTotal' ? 'bg-orange-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Total Playoffs
             </button>
             <button
               onClick={() => setViewMode('usedPlayers')}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
-                viewMode === 'usedPlayers' ? 'bg-purple-500 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                viewMode === 'usedPlayers' ? 'bg-purple-500 text-white shadow-lg' : 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
               }`}
             >
               Used Players
@@ -278,7 +296,7 @@ function calculateRoundPoints(weeklyPoints: number[], roundWeeks: number[], mult
               <select
                 value={selectedWeek}
                 onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                className="px-3 py-2 border border-gray-300 rounded-lg"
+                className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               >
                 {Array.from({length: 20}, (_, i) => i + 1).map(week => (
                   <option key={week} value={week}>Week {week}</option>
@@ -289,53 +307,44 @@ function calculateRoundPoints(weeklyPoints: number[], roundWeeks: number[], mult
         </div>
 
         {viewMode !== 'usedPlayers' && (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900">{getStandingsTitle()}</h2>
+          <div className="bg-gray-800 rounded-xl shadow-xl border border-gray-700 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-700">
+              <h2 className="text-2xl font-bold text-white">{getStandingsTitle()}</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-700">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Rank</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Team</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Owner</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Points</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Players Used</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Rank</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Team</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-300">Owner</th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-300">Points</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-700">
                   {standings.map((team, index) => (
-                    <tr key={team.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={team.id} className="hover:bg-gray-700/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                             index === 0 ? 'bg-yellow-400 text-white' :
                             index === 1 ? 'bg-gray-400 text-white' :
                             index === 2 ? 'bg-orange-400 text-white' :
-                            'bg-gray-200 text-gray-700'
+                            'bg-gray-600 text-gray-300'
                           }`}>
                             {index + 1}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-semibold text-gray-900">{team.name}</div>
+                        <div className="font-semibold text-white">{team.name}</div>
                       </td>
-                      <td className="px-6 py-4 text-gray-600">{team.owner}</td>
-                      <td className="px-6 py-4 text-center font-bold text-blue-600 text-lg">
+                      <td className="px-6 py-4 text-gray-300">{team.owner}</td>
+                      <td className="px-6 py-4 text-center font-bold text-cyan-400 text-lg">
                         {team.points.toFixed(1)}
                         {(viewMode.includes('playoff') || viewMode === 'playoffsTotal') && (
-                          <span className="text-sm text-orange-600 ml-1">(1.5x)</span>
+                          <span className="text-sm text-orange-400 ml-1">(1.5x)</span>
                         )}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={() => setSelectedTeam(selectedTeam === team.id ? null : team.id)}
-                          className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium hover:bg-blue-200 transition-colors"
-                        >
-                          {team.usedPlayers.length} players
-                        </button>
                       </td>
                     </tr>
                   ))}
@@ -348,19 +357,19 @@ function calculateRoundPoints(weeklyPoints: number[], roundWeeks: number[], mult
         {viewMode === 'usedPlayers' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {mockTeams.map(team => (
-              <div key={team.id} className="bg-white rounded-xl shadow-lg p-6">
+              <div key={team.id} className="bg-gray-800 rounded-xl shadow-xl border border-gray-700 p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-gray-900">{team.name}</h3>
-                  <span className="text-sm text-gray-500">Owner: {team.owner}</span>
+                  <h3 className="text-xl font-bold text-white">{team.name}</h3>
+                  <span className="text-sm text-gray-400">Owner: {team.owner}</span>
                 </div>
                 
                 <div className="mb-4">
-                  <div className="text-sm text-gray-600 mb-2">
+                  <div className="text-sm text-gray-300 mb-2">
                     Players Used: {team.usedPlayers.length}
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-700 rounded-full h-2">
                     <div 
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                      className="bg-cyan-500 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${Math.min((team.usedPlayers.length / 20) * 100, 100)}%` }}
                     ></div>
                   </div>
@@ -369,27 +378,22 @@ function calculateRoundPoints(weeklyPoints: number[], roundWeeks: number[], mult
                 {team.usedPlayers.length > 0 ? (
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {team.usedPlayers.map(player => (
-                      <div key={`${player.id}-${player.weekUsed}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${getPositionColor(player.position)}`}>
+                      <div key={player.id} className="flex items-center justify-between p-2 bg-gray-700 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded text-xs font-semibold border ${getPositionColor(player.position)}`}>
                             {player.position}
                           </span>
-                          <div>
-                            <div className="font-medium text-sm">{player.name}</div>
-                            <div className="text-xs text-gray-500">Week {player.weekUsed}</div>
-                          </div>
+                          <span className="text-white font-medium">{player.name}</span>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-blue-600">
-                            {(player.points * (player.weekUsed > regularSeasonWeeks ? 1.5 : 1)).toFixed(1)}
-                          </div>
-                          <div className="text-xs text-gray-500">pts</div>
+                          <div className="text-cyan-400 font-bold">Week {player.weekUsed}</div>
+                          <div className="text-xs text-gray-400">{player.points} pts</div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center text-gray-400 py-4">
                     No players used yet this season
                   </div>
                 )}
@@ -398,36 +402,16 @@ function calculateRoundPoints(weeklyPoints: number[], roundWeeks: number[], mult
           </div>
         )}
 
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-blue-900 mb-3">League Format</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-blue-800 text-sm">
-            <div>
-              <h4 className="font-semibold mb-2">Regular Season Structure:</h4>
-              <ul className="space-y-1">
-                <li>• <strong>Round 1:</strong> Weeks 1-5 (5 weeks)</li>
-                <li>• <strong>Round 2:</strong> Weeks 6-9 (4 weeks)</li>
-                <li>• <strong>Round 3:</strong> Weeks 10-13 (4 weeks)</li>
-                <li>• <strong>Round 4:</strong> Weeks 14-17 (4 weeks)</li>
-                <li>• Points-only league - no head-to-head matchups</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Playoff Structure:</h4>
-              <ul className="space-y-1">
-                <li>• <strong>Playoff 1:</strong> Week 18 (1.5x points)</li>
-                <li>• <strong>Playoff 2:</strong> Week 19 (1.5x points)</li>
-                <li>• <strong>Playoff 3:</strong> Week 20 (1.5x points)</li>
-                <li>• Player pool resets after regular season</li>
-                <li>• All playoff points worth 1.5x multiplier</li>
-              </ul>
-            </div>
+        {/* Player Usage Rules */}
+        <div className="mt-8 bg-gray-800 rounded-xl shadow-xl border border-gray-700 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <h4 className="font-semibold mb-2">Player Usage Rules:</h4>
-              <ul className="space-y-1">
+              <h4 className="font-semibold mb-2 text-white">Player Usage Rules:</h4>
+              <ul className="space-y-1 text-gray-300">
                 <li>• Each player can only be used ONCE during regular season (Weeks 1-17)</li>
                 <li>• After regular season ends, player pool completely resets for playoffs</li>
-                <li>• Strategy: Save elite players for crucial rounds and playoffs</li>
-                <li>• Current status: <strong>{isPlayoffs ? 'PLAYOFFS - Player pool reset, 1.5x points' : 'REGULAR SEASON - Track player usage carefully'}</strong></li>
+                <li>• Players not used in the regular season are worth 1.5x points in playoffs</li>
+                <li>• Current status: <strong className="text-cyan-400">{isPlayoffs ? 'PLAYOFFS - Player pool reset, 1.5x points' : 'REGULAR SEASON - Track player usage carefully'}</strong></li>
               </ul>
             </div>
           </div>
