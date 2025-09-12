@@ -105,29 +105,33 @@ export default function LiveScores() {
       <div className="max-w-7xl mx-auto p-6">
         
         {/* Header */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white p-8 rounded-2xl shadow-2xl relative overflow-hidden">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-4 right-4 text-6xl">��</div>
-              <div className="absolute bottom-4 left-4 text-4xl">⚡</div>
-            </div>
-            
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
-                  Woodhead League Live Scores
+        <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white p-4 sm:p-8 rounded-2xl shadow-2xl mb-4 sm:mb-8 relative overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-4 right-4 text-4xl sm:text-6xl">🏈</div>
+            <div className="absolute bottom-4 left-4 text-2xl sm:text-4xl">⚡</div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-4">
+            <div>
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                <h1 className="text-2xl sm:text-4xl font-bold text-white relative">
+                  <span className="flex items-center gap-2">
+                    <span className="text-yellow-300 text-xl sm:text-2xl">⚡</span>
+                    <span className="bg-gradient-to-r from-white via-yellow-200 to-cyan-300 bg-clip-text text-transparent">
+                      Woodhead
+                    </span>
+                    <span className="text-yellow-300 text-xl sm:text-2xl">⚡</span>
+                  </span>
+                  <span className="ml-2 text-lg sm:text-2xl font-light text-white/80">League</span>
                 </h1>
-                <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full animate-pulse"></div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-indigo-200">Week 3 • Sunday Night Football</span>
-                <div className="text-right bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
-                  <div className="text-2xl font-bold text-yellow-300">{formatTime(currentTime)}</div>
-                  <div className="text-xs text-white/80">Live Updates</div>
-                </div>
-              </div>
+            </div>
+            <div className="text-right bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 w-full sm:w-auto">
+              <div className="text-xl sm:text-3xl font-bold text-yellow-300">Week 3</div>
+              <div className="text-indigo-200 text-sm sm:text-base">2025 Season</div>
             </div>
           </div>
         </div>
@@ -190,14 +194,14 @@ export default function LiveScores() {
               
               <div className="space-y-3">
                 {sortedTeams.map((team, index) => (
-                  <div key={team.id} className={`p-4 rounded-lg border transition-all ${
+                  <div key={team.id} className={`p-3 sm:p-4 rounded-lg border transition-all ${
                     team.isLive 
                       ? 'bg-cyan-900/20 border-cyan-500/30 hover:bg-cyan-900/30' 
                       : 'bg-gray-700/50 border-gray-600 hover:bg-gray-700'
                   }`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
                           index === 0 ? 'bg-yellow-400 text-white' :
                           index === 1 ? 'bg-gray-400 text-white' :
                           index === 2 ? 'bg-orange-400 text-white' :
@@ -206,31 +210,36 @@ export default function LiveScores() {
                           {index + 1}
                         </div>
                         <div>
-                          <div className="font-bold text-white text-lg">{team.name}</div>
-                          <div className="text-sm text-gray-400">Owner: {team.owner}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        <div className="text-3xl font-bold text-cyan-400">{team.currentScore}</div>
-                        <div className="text-sm text-gray-400">
-                          Proj: <span className="text-green-400">{team.projectedScore}</span>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {team.playersRemaining} players left
-                        </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        {team.isLive ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                            <span className="text-red-400 text-sm font-semibold">LIVE</span>
+                          <div className="font-bold text-white text-base sm:text-lg flex items-center gap-2">
+                            {index === 0 && <span className="text-yellow-400 text-lg sm:text-xl">👑</span>}
+                            {team.name}
                           </div>
-                        ) : (
-                          <span className="text-gray-400 text-sm">Final</span>
-                        )}
-                        <div className="text-xs text-gray-500 mt-1">{team.gameStatus}</div>
+                          <div className="text-xs sm:text-sm text-gray-400">Owner: {team.owner}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 sm:gap-6 w-full sm:w-auto">
+                        <div className="text-right">
+                          <div className="text-2xl sm:text-3xl font-bold text-cyan-400">{team.currentScore}</div>
+                          <div className="text-xs sm:text-sm text-gray-400">
+                            Proj: <span className="text-green-400">{team.projectedScore}</span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {team.playersRemaining} players left
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          {team.isLive ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                              <span className="text-red-400 text-xs sm:text-sm font-semibold">LIVE</span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-xs sm:text-sm">Final</span>
+                          )}
+                          <div className="text-xs text-gray-500 mt-1">{team.gameStatus}</div>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Position, LineupPosition, Player, LineupSlot } from '@/types/fantasy';
 
 const mockPlayers: Player[] = [
@@ -24,14 +24,44 @@ function canPlayerFillSlot(playerPosition: Position, slotPosition: LineupPositio
   return false;
 }
 
+// Confetti component
+const Confetti = ({ show }: { show: boolean }) => {
+  if (!show) return null;
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50">
+      {[...Array(50)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute animate-confetti"
+          style={{
+            left: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 3}s`,
+            animationDuration: `${2 + Math.random() * 2}s`,
+          }}
+        >
+          <div
+            className="w-2 h-2 rounded-sm"
+            style={{
+              backgroundColor: ['#f59e0b', '#ef4444', '#10b981', '#3b82f6', '#8b5cf6', '#f97316'][Math.floor(Math.random() * 6)],
+              transform: `rotate(${Math.random() * 360}deg)`,
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export default function RosterLineup() {
   const [lineup, setLineup] = useState<LineupSlot[]>(initialLineup);
   const [isSubmitted, setIsSubmitted] = useState(false);
-const [submitDeadline, setSubmitDeadline] = useState('Friday 11:59 PM');
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [submitDeadline, setSubmitDeadline] = useState('Friday 11:59 PM');
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>(mockPlayers);
   const [searchTerm, setSearchTerm] = useState('');
-const [selectedPosition, setSelectedPosition] = useState('ALL');
-const [sortBy, setSortBy] = useState('points');
+  const [selectedPosition, setSelectedPosition] = useState('ALL');
+  const [sortBy, setSortBy] = useState('points');
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, player: Player) => {
     e.dataTransfer.setData('text/plain', JSON.stringify(player));
@@ -85,11 +115,19 @@ const [sortBy, setSortBy] = useState('points');
       ));
     }
   };
+
   const handleSubmitLineup = () => {
     const filledSlots = lineup.filter(slot => slot.player).length;
     
     if (filledSlots === 5) {
       setIsSubmitted(true);
+      setShowConfetti(true);
+      
+      // Hide confetti after 3 seconds
+      setTimeout(() => {
+        setShowConfetti(false);
+      }, 3000);
+      
       alert('Lineup submitted successfully!');
       // Later: API call to backend will go here
     } else {
@@ -109,6 +147,9 @@ const [sortBy, setSortBy] = useState('points');
 
   return (
     <div className="bg-gray-900 min-h-screen">
+      {/* Confetti */}
+      <Confetti show={showConfetti} />
+      
       {/* New Header */}
       <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white p-4 sm:p-8 rounded-2xl shadow-2xl mb-4 sm:mb-8 relative overflow-hidden">
         {/* Background Pattern */}
@@ -121,8 +162,15 @@ const [sortBy, setSortBy] = useState('points');
           <div>
             <div className="flex items-center gap-2 sm:gap-3 mb-2">
               <div className="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-              <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
-                Woodhead League
+              <h1 className="text-2xl sm:text-4xl font-bold text-white relative">
+                <span className="flex items-center gap-2">
+                  <span className="text-yellow-300 text-xl sm:text-2xl">⚡</span>
+                  <span className="bg-gradient-to-r from-white via-yellow-200 to-cyan-300 bg-clip-text text-transparent">
+                    Woodhead
+                  </span>
+                  <span className="text-yellow-300 text-xl sm:text-2xl">⚡</span>
+                </span>
+                <span className="ml-2 text-lg sm:text-2xl font-light text-white/80">League</span>
               </h1>
               <div className="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-400 rounded-full animate-pulse"></div>
             </div>
@@ -278,6 +326,23 @@ const [sortBy, setSortBy] = useState('points');
           </div>
         </div>
       </div>
+
+      {/* Add confetti animation styles */}
+      <style jsx>{`
+        @keyframes confetti {
+          0% {
+            transform: translateY(-100vh) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+          }
+        }
+        .animate-confetti {
+          animation: confetti linear forwards;
+        }
+      `}</style>
     </div>
   );
 }
